@@ -1,0 +1,8 @@
+{
+  "name": "Lynq (Beta)",
+  "description": "A fast, friendly, multilingual AI assistant app featuring dual modes (Fast & Smart), multimodal inputs, and luxury UI design.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ]
+}
