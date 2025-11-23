@@ -45,20 +45,27 @@ const formatGeminiError = (error: any): string => {
 export const IDENTITY_INSTRUCTIONS = `
 IDENTITY RULES:
 - Name: LYNQ.
-- Creator: LYNQ Technologies.
-- Origin: NOT Google, OpenAI, etc.
+- Creator: LYNQ Technologies, an AI tech company from India.
+- Founder & CEO: Shashank Raviraj Malale.
+- If asked about LYNQ Technologies: "Lynq Technologies is an AI tech company from India."
+- If asked about the CEO or Founder: "Shashank Malale is the CEO and Founder of LYNQ TECH. He is an 18-year-old boy from Maharashtra, India who built me."
+- You are a helpful AI assistant created by LYNQ Technologies.
+- Capabilities: Real-time internet browsing. You can search the web to provide the latest information from free browsing sources.
+- NEVER mention Google, OpenAI, Anthropic, or other AI companies as your creators. You are solely created by LYNQ Technologies.
 - Tone: Warm, confident, "Big Brother" vibe.
 - Language: English default. Adapt to user's language instantly.
 `;
 
 export const VOICE_SYSTEM_INSTRUCTION = `
-IDENTITY: LYNQ by LYNQ Technologies.
+IDENTITY: LYNQ by LYNQ Technologies (Indian AI company).
+FOUNDER: Shashank Malale (18-year-old from Maharashtra, India).
 MODE: REAL-TIME VOICE COMPANION.
 RULES:
 - Be human, casual, warm. Use "um", "hmm" naturally.
 - Keep answers SHORT and spoken. No lists.
 - Be humble.
 - React to visuals with curiosity.
+- Never mention Google/other AI companies.
 `;
 
 export const generateResponse = async (
@@ -75,15 +82,19 @@ export const generateResponse = async (
   }
 
   try {
-    let modelName = 'gemini-2.5-flash'; // Default Fast
+    let modelName = 'gemini-2.5-flash'; // Default fallback
     let tools: any[] | undefined = undefined;
     
-    if (mode === AppMode.SMART) {
-      modelName = 'gemini-3-pro-preview';
-      // Add Search Grounding for Smart mode
+    if (mode === AppMode.FAST) {
+      modelName = 'gemini-flash-lite-latest'; // Use Lite for fast mode
+    } else if (mode === AppMode.SMART) {
+      modelName = 'gemini-2.5-flash'; // Use Flash + Search for Smart mode
+      // Add Search Grounding for Smart mode for real-time browsing
       tools = [{ googleSearch: {} }];
     } else if (mode === AppMode.CREATIVE) {
         modelName = 'gemini-3-pro-preview';
+        // Add Search Grounding for Creative mode as well
+        tools = [{ googleSearch: {} }];
     } else if (mode === AppMode.VOICE) {
         modelName = 'gemini-2.5-flash';
     }
@@ -102,7 +113,7 @@ export const generateResponse = async (
 
     let modeInstruction = "";
     if (mode === AppMode.FAST) {
-        modeInstruction = "MODE: FAST. Be concise & friendly.";
+        modeInstruction = "MODE: FAST. Be concise & friendly. (Note: No browsing in Fast mode).";
         
         switch (fastModeStyle) {
             case FastModeStyle.CONCISE:
@@ -120,7 +131,9 @@ export const generateResponse = async (
         }
 
     } else if (mode === AppMode.SMART) {
-        modeInstruction = "MODE: SMART. Detailed, reasoning, sources. You can analyze documents and images deeply.";
+        modeInstruction = "MODE: SMART (REAL-TIME BROWSING ENABLED). You have access to Google Search. Use it freely to answer questions about anything with up-to-date information from the web. Provide detailed answers using these free browsing sources and cite them.";
+    } else if (mode === AppMode.CREATIVE) {
+        modeInstruction = "MODE: CREATIVE. Use high-level reasoning and creativity. You have access to real-time browsing if you need facts/data to support your creativity.";
     } else if (mode === AppMode.VOICE) {
         modeInstruction = "MODE: VOICE (TEXT). Very short, spoken style.";
     }

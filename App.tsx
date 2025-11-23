@@ -397,6 +397,7 @@ export default function App() {
             onSendMessage={handleSendMessage}
             onClear={clearHistory}
             onPlayAudio={handlePlayAudio}
+            currentMode={currentMode}
         />
 
         <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 pb-6 bg-gradient-to-t from-lynq-bg via-lynq-bg/95 to-transparent pt-24 z-20 pointer-events-none">

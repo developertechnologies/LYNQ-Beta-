@@ -1,8 +1,8 @@
+
 import React, { useEffect, useRef } from 'react';
-import { Message } from '../types';
+import { Message, Attachment, AppMode } from '../types';
 import { MessageBubble } from './MessageBubble';
-import { Attachment } from '../types';
-import { Sparkles, Clock, Zap } from 'lucide-react';
+import { Sparkles, Clock, Zap, Globe, Video } from 'lucide-react';
 import { playUISound } from '../utils/sound';
 
 interface ChatAreaProps {
@@ -12,6 +12,7 @@ interface ChatAreaProps {
   onSendMessage: (text: string, attachments: Attachment[]) => void;
   onClear: () => void;
   onPlayAudio: (base64Data: string) => void;
+  currentMode: AppMode;
 }
 
 export const ChatArea: React.FC<ChatAreaProps> = ({ 
@@ -20,7 +21,8 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   generationTime = 0,
   onSendMessage,
   onClear,
-  onPlayAudio
+  onPlayAudio,
+  currentMode
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -84,16 +86,56 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
         
         {isGenerating && (
           <div className="flex items-center gap-4 max-w-3xl mx-auto w-full animate-fade-in pl-14 md:pl-16">
-             <div className="flex items-center gap-3 bg-lynq-surface/60 border border-lynq-border px-5 py-2.5 rounded-full backdrop-blur-md shadow-glow">
-               <div className="flex items-center gap-1.5 h-4">
-                  <div className="w-2 h-2 rounded-full bg-lynq-accent animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-2 h-2 rounded-full bg-lynq-accent animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-2 h-2 rounded-full bg-lynq-accent animate-bounce" style={{ animationDelay: '300ms' }} />
+             <div className="flex items-center gap-3 bg-lynq-surface/60 border border-lynq-border px-5 py-2.5 rounded-full backdrop-blur-md shadow-glow relative overflow-hidden group">
+               
+               {/* Mode-Specific Background Effects */}
+               {currentMode === AppMode.SMART && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/10 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }}></div>
+               )}
+               {currentMode === AppMode.FAST && (
+                  <div className="absolute inset-0 bg-yellow-400/5 animate-pulse"></div>
+               )}
+
+               {/* Icon Animation */}
+               <div className="relative z-10">
+                  {currentMode === AppMode.FAST ? (
+                      <Zap size={18} className="text-yellow-400 animate-[pulse_0.2s_ease-in-out_infinite]" fill="currentColor" />
+                  ) : currentMode === AppMode.SMART ? (
+                      <Globe size={18} className="text-cyan-400 animate-[spin_3s_linear_infinite]" />
+                  ) : currentMode === AppMode.VIDEO ? (
+                      <Video size={18} className="text-purple-400 animate-pulse" />
+                  ) : (
+                      <div className="flex items-center gap-1.5 h-4">
+                        <div className="w-2 h-2 rounded-full bg-lynq-accent animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <div className="w-2 h-2 rounded-full bg-lynq-accent animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <div className="w-2 h-2 rounded-full bg-lynq-accent animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                  )}
                </div>
-               <div className="w-px h-4 bg-white/10 mx-2"></div>
-               <div className="text-[11px] font-mono text-lynq-textMuted flex items-center gap-1.5">
-                  <Clock size={12} className="animate-pulse" />
-                  <span>{(generationTime / 1000).toFixed(1)}s</span>
+
+               <div className="w-px h-4 bg-white/10 mx-2 relative z-10"></div>
+               
+               {/* Text & Timer */}
+               <div className="text-[11px] font-mono text-lynq-textMuted flex items-center gap-2 relative z-10">
+                  <span className={`font-bold tracking-wider ${
+                      currentMode === AppMode.FAST ? 'text-yellow-400/90' : 
+                      currentMode === AppMode.SMART ? 'text-cyan-400/90' : ''
+                  }`}>
+                      {currentMode === AppMode.FAST ? "TURBO PROCESSING" :
+                       currentMode === AppMode.SMART ? "BROWSING WEB" :
+                       currentMode === AppMode.VIDEO ? "RENDERING VIDEO" : 
+                       "THINKING"}
+                  </span>
+                  
+                  {(currentMode !== AppMode.CREATIVE && currentMode !== AppMode.VOICE) && (
+                      <>
+                        <span className="opacity-30">|</span>
+                        <div className="flex items-center gap-1">
+                            <Clock size={10} className="opacity-70" />
+                            <span>{(generationTime / 1000).toFixed(1)}s</span>
+                        </div>
+                      </>
+                  )}
                </div>
              </div>
           </div>
